@@ -1,0 +1,506 @@
+{% extends "app/base.html" %}
+
+{% block title %}Home{% endblock %}
+
+{% block content %}
+<div class="container">
+    <!-- Hero Section -->
+    <div class="hero-section mb-5">
+        <div class="animated-bg"></div>
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <div class="hero-content">
+                    <div class="hero-icon">
+                        <i class="fas fa-pencil-alt"></i>
+                    </div>
+                    <h1 class="display-4 mb-3 animate-title">Welcome to DIY Blog</h1>
+                    <p class="lead text-muted animate-subtitle">Discover stories, thinking, and expertise from writers on any topic.</p>
+                    {% if user.is_authenticated %}
+                    <div class="d-flex justify-content-center gap-3 animate-buttons">
+                        <a href="{% url 'app:blog-create' %}" class="btn btn-primary btn-lg action-btn">
+                            <i class="fas fa-plus-circle me-2"></i>Write a Story
+                        </a>
+                        <a href="{% url 'app:blog-list' %}" class="btn btn-outline-primary btn-lg action-btn">
+                            <i class="fas fa-book-reader me-2"></i>Start Reading
+                        </a>
+                    </div>
+                    {% else %}
+                    <div class="d-flex justify-content-center gap-3 animate-buttons">
+                        <a href="{% url 'app:blog-list' %}" class="btn btn-primary btn-lg action-btn">
+                            <i class="fas fa-book-reader me-2"></i>Start Reading
+                        </a>
+                        <a href="{% url 'login' %}" class="btn btn-outline-primary btn-lg action-btn">
+                            <i class="fas fa-sign-in-alt me-2"></i>Login to Write
+                        </a>
+                    </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Latest Blog Posts -->
+    <section class="latest-posts">
+        <div class="section-header d-flex justify-content-between align-items-center mb-4">
+            <div class="header-content">
+                <h2 class="h3 gradient-text">Latest Blog Posts</h2>
+                <div class="header-line"></div>
+            </div>
+            <a href="{% url 'app:blog-list' %}" class="btn btn-outline-primary action-btn">
+                View All <i class="fas fa-arrow-right ms-2"></i>
+            </a>
+        </div>
+
+        <div class="row g-4">
+            {% for blog in latest_blogs %}
+            <div class="col-md-6 col-lg-4">
+                <article class="card h-100 blog-card">
+                    <div class="card-image">
+                        {% if blog.image %}
+                            <img src="{{ blog.image.url }}" alt="{{ blog.title }}" class="card-img-top">
+                        {% else %}
+                            <div class="placeholder-image">
+                                <i class="fas fa-image"></i>
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="card-body">
+                        <div class="author-info">
+                            {% if blog.author.profile_picture %}
+                                <img src="{{ blog.author.profile_picture.url }}" 
+                                     alt="{{ blog.author.user.username }}"
+                                     class="author-img">
+                            {% else %}
+                                <i class="fas fa-user-circle fa-2x author-icon"></i>
+                            {% endif %}
+                            <div class="author-details">
+                                <a href="{% url 'app:author-detail' blog.author.pk %}" class="author-name">
+                                    {{ blog.author.user.get_full_name|default:blog.author.user.username }}
+                                </a>
+                                <div class="post-date">{{ blog.post_date|date:"M d, Y" }}</div>
+                            </div>
+                        </div>
+
+                        <h3 class="card-title">
+                            <a href="{% url 'app:blog-detail' blog.pk %}">{{ blog.title }}</a>
+                        </h3>
+
+                        <p class="card-text">{{ blog.content|truncatewords:30 }}</p>
+
+                        <div class="card-footer">
+                            <span class="comment-badge">
+                                <i class="fas fa-comments"></i>
+                                {{ blog.comment_set.count }} Comments
+                            </span>
+                            <a href="{% url 'app:blog-detail' blog.pk %}" class="read-more">
+                                Read More <i class="fas fa-arrow-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </article>
+            </div>
+            {% empty %}
+            <div class="col-12 text-center py-5">
+                <div class="empty-state">
+                    <div class="empty-icon">
+                        <i class="fas fa-newspaper"></i>
+                    </div>
+                    <h3 class="gradient-text">No Blog Posts Yet</h3>
+                    <p class="text-muted">Be the first one to share your thoughts!</p>
+                    {% if user.is_authenticated %}
+                    <a href="{% url 'app:blog-create' %}" class="btn btn-primary action-btn">
+                        <i class="fas fa-plus-circle me-2"></i>Create First Post
+                    </a>
+                    {% else %}
+                    <a href="{% url 'login' %}" class="btn btn-primary action-btn">
+                        <i class="fas fa-sign-in-alt me-2"></i>Login to Post
+                    </a>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </section>
+</div>
+
+<style>
+    /* Hero Section */
+    .hero-section {
+        padding: 8rem 0;
+        background: linear-gradient(135deg, var(--background-white) 0%, var(--secondary-color) 100%);
+        border-radius: 40px;
+        margin-top: 2rem;
+        position: relative;
+        overflow: hidden;
+        box-shadow: 0 30px 60px rgba(42, 157, 143, 0.15);
+    }
+
+    .animated-bg {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: 
+            radial-gradient(circle at 20% 20%, rgba(42, 157, 143, 0.1) 0%, transparent 50%),
+            radial-gradient(circle at 80% 80%, rgba(42, 157, 143, 0.1) 0%, transparent 50%),
+            linear-gradient(45deg, rgba(42, 157, 143, 0.05) 25%, transparent 25%),
+            linear-gradient(-45deg, rgba(42, 157, 143, 0.05) 25%, transparent 25%);
+        background-size: 100% 100%, 100% 100%, 100px 100px, 100px 100px;
+        opacity: 0.8;
+        animation: patternMove 20s linear infinite;
+    }
+
+    .hero-icon {
+        width: 120px;
+        height: 120px;
+        margin: 0 auto 2rem;
+        background: var(--gradient-primary);
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        animation: floatIcon 3s ease-in-out infinite;
+    }
+
+    .hero-icon i {
+        font-size: 3rem;
+        color: white;
+        animation: rotateIcon 10s linear infinite;
+    }
+
+    @keyframes floatIcon {
+        0%, 100% { transform: translateY(0); }
+        50% { transform: translateY(-20px); }
+    }
+
+    @keyframes rotateIcon {
+        from { transform: rotate(0deg); }
+        to { transform: rotate(360deg); }
+    }
+
+    /* Latest Blog Posts Section */
+    .latest-posts {
+        padding: 4rem 0;
+        position: relative;
+    }
+
+    .latest-posts::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, var(--primary-color), transparent);
+    }
+
+    .section-header {
+        margin-bottom: 4rem;
+        position: relative;
+    }
+
+    .section-header h2 {
+        font-size: 2.5rem;
+        font-weight: 800;
+        background: var(--gradient-primary);
+        -webkit-background-clip: text;
+        background-clip: text;
+        color: transparent;
+        margin-bottom: 1rem;
+        position: relative;
+        display: inline-block;
+    }
+
+    .section-header h2::after {
+        content: '';
+        position: absolute;
+        bottom: -10px;
+        left: 0;
+        width: 100%;
+        height: 4px;
+        background: var(--gradient-primary);
+        transform: scaleX(0);
+        transform-origin: left;
+        transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .section-header:hover h2::after {
+        transform: scaleX(1);
+    }
+
+    /* Blog Card Enhancement */
+    .blog-card {
+        transition: all 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+        border: none;
+        border-radius: 30px;
+        overflow: hidden;
+        background: white;
+        box-shadow: 0 15px 40px rgba(0, 0, 0, 0.08);
+        animation: scaleIn 1.2s cubic-bezier(0.4, 0, 0.2, 1) forwards;
+        opacity: 0;
+        position: relative;
+        backdrop-filter: blur(15px);
+        transform-style: preserve-3d;
+        perspective: 1000px;
+        margin-bottom: 2rem;
+    }
+
+    .card-image {
+        height: 250px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .card-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent 0%, rgba(0, 0, 0, 0.7) 100%);
+        opacity: 0;
+        transition: opacity 0.6s ease;
+    }
+
+    .card-image img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+        transition: transform 0.8s cubic-bezier(0.4, 0, 0.2, 1);
+    }
+
+    .placeholder-image {
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-size: 3rem;
+        opacity: 0.8;
+        position: relative;
+    }
+
+    .placeholder-image::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(45deg, transparent, rgba(255, 255, 255, 0.2), transparent);
+        transform: translateX(-100%);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        100% { transform: translateX(100%); }
+    }
+
+    .blog-card:hover .card-image img {
+        transform: scale(1.1);
+    }
+
+    .blog-card:hover .card-image::after {
+        opacity: 1;
+    }
+
+    .card-body {
+        padding: 2rem;
+        position: relative;
+        z-index: 1;
+    }
+
+    .author-info {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1.5rem;
+    }
+
+    .author-img {
+        width: 48px;
+        height: 48px;
+        border-radius: 50%;
+        object-fit: cover;
+        border: 3px solid var(--primary-color);
+        transition: all 0.6s ease;
+        box-shadow: 0 4px 15px rgba(42, 157, 143, 0.2);
+    }
+
+    .author-img:hover {
+        transform: scale(1.1) rotate(5deg);
+        border-color: var(--accent-color);
+    }
+
+    .author-details {
+        margin-left: 1rem;
+    }
+
+    .author-name {
+        font-weight: 600;
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .author-name:hover {
+        color: var(--primary-color);
+    }
+
+    .post-date {
+        font-size: 0.9rem;
+        color: var(--text-secondary);
+    }
+
+    .card-title {
+        font-size: 1.5rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        line-height: 1.4;
+    }
+
+    .card-title a {
+        color: var(--text-primary);
+        text-decoration: none;
+        transition: color 0.3s ease;
+    }
+
+    .card-title a:hover {
+        color: var(--primary-color);
+    }
+
+    .card-text {
+        color: var(--text-secondary);
+        line-height: 1.6;
+        margin-bottom: 1.5rem;
+    }
+
+    .card-footer {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        padding-top: 1rem;
+        border-top: 1px solid rgba(0, 0, 0, 0.1);
+    }
+
+    .comment-badge {
+        background: var(--gradient-primary);
+        color: white;
+        padding: 0.5rem 1rem;
+        border-radius: 50px;
+        font-size: 0.9rem;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .comment-badge i {
+        margin-right: 0.5rem;
+    }
+
+    .comment-badge:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 5px 15px rgba(42, 157, 143, 0.2);
+    }
+
+    .read-more {
+        color: var(--primary-color);
+        text-decoration: none;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+        transition: all 0.3s ease;
+    }
+
+    .read-more i {
+        margin-left: 0.5rem;
+        transition: transform 0.3s ease;
+    }
+
+    .read-more:hover {
+        color: var(--accent-color);
+    }
+
+    .read-more:hover i {
+        transform: translateX(5px);
+    }
+
+    /* Responsive Adjustments */
+    @media (max-width: 768px) {
+        .section-header h2 {
+            font-size: 2rem;
+        }
+
+        .card-image {
+            height: 200px;
+        }
+
+        .card-body {
+            padding: 1.5rem;
+        }
+
+        .card-title {
+            font-size: 1.3rem;
+        }
+    }
+
+    /* Button Styles */
+    .action-btn {
+        padding: 0.8rem 2rem;
+        border-radius: 50px;
+        font-weight: 600;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+        transition: all 0.3s ease;
+        position: relative;
+        overflow: hidden;
+        z-index: 1;
+    }
+
+    .action-btn::before {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: linear-gradient(45deg, var(--primary-color), var(--accent-color));
+        opacity: 0;
+        z-index: -1;
+        transition: opacity 0.3s ease;
+    }
+
+    .action-btn:hover::before {
+        opacity: 1;
+    }
+
+    .btn-primary.action-btn {
+        background: var(--gradient-primary);
+        border: none;
+        box-shadow: 0 4px 15px rgba(42, 157, 143, 0.2);
+    }
+
+    .btn-primary.action-btn:hover {
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(42, 157, 143, 0.3);
+        color: white;
+    }
+
+    .btn-outline-primary.action-btn {
+        border: 2px solid var(--primary-color);
+        color: var(--primary-color);
+    }
+
+    .btn-outline-primary.action-btn:hover {
+        background: var(--gradient-primary);
+        border-color: transparent;
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 6px 20px rgba(42, 157, 143, 0.3);
+    }
+</style>
+{% endblock %} 
